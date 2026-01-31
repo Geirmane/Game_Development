@@ -2,6 +2,13 @@
 ![Screenshot](Week1act1.png)
 Week 1 Activity 1
 
+
+![Screenshot](Week2.png)
+Week 2
+
+
+
+
 # Simple Scene with a Moving Node (Godot)
 
 ## 📌 Activity Title
