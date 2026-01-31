@@ -1,26 +1,32 @@
-[gd_scene load_steps=4 format=3 uid="uid://h36olv6uar35"]
+[gd_scene load_steps=5 format=3 uid="uid://h36olv6uar35"]
 
 [ext_resource type="Texture2D" uid="uid://dur88fs4myruu" path="res://Naruto-Kid-Young-Naruto-Uzumaki-PNG-Transparent-Iconic-Anime-Character-Ninja-in-Training.png" id="1_ig7tw"]
 [ext_resource type="Texture2D" uid="uid://blue4yq5rk7u8" path="res://fb8wf33k7kc61.webp" id="2_0xm2m"]
 
-[sub_resource type="GDScript" id="GDScript_0xm2m"]
-script/source = "extends Node2D
+[sub_resource type="GDScript" id="GDScript_h2yge"]
+script/source = "extends CharacterBody2D
 
-@export var speed: float = 200.0
-var direction: int = 1
+@export var speed := 300.0
 
-func _process(delta):
-	$MovingSprite.position.x += speed * direction * delta
-	
-	# Reverse direction when reaching screen edges
-	if $MovingSprite.position.x > 700:
-		direction = -1
-	elif $MovingSprite.position.x < 100:
-		direction = 1
+func _physics_process(delta):
+	var direction := Vector2.ZERO
+
+	if Input.is_action_pressed(\"ui_right\"):
+		direction.x += 1
+	if Input.is_action_pressed(\"ui_left\"):
+		direction.x -= 1
+	if Input.is_action_pressed(\"ui_down\"):
+		direction.y += 1
+	if Input.is_action_pressed(\"ui_up\"):
+		direction.y -= 1
+
+	velocity = direction.normalized() * speed
+	move_and_slide()
 "
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ig7tw"]
+
 [node name="Main" type="Node2D"]
-script = SubResource("GDScript_0xm2m")
 
 [node name="HelloLabel" type="Label" parent="."]
 modulate = Color(0, 0, 0, 1)
@@ -32,14 +38,20 @@ scale = Vector2(3, 3)
 text = "Hello World!
 I'm Naruto "
 
-[node name="MovingSprite" type="Sprite2D" parent="."]
+[node name="MovingSprite" type="CharacterBody2D" parent="."]
 z_index = 1
 position = Vector2(295.99994, 433)
 scale = Vector2(0.28967735, 0.3132)
+script = SubResource("GDScript_h2yge")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MovingSprite"]
+shape = SubResource("CapsuleShape2D_ig7tw")
+
+[node name="Sprite2D" type="Sprite2D" parent="MovingSprite"]
 texture = ExtResource("1_ig7tw")
 
 [node name="Fb8Wf33k7Kc61" type="Sprite2D" parent="."]
 z_index = -10
-position = Vector2(576.00006, 323.37497)
+position = Vector2(576.00006, 328)
 scale = Vector2(1.7984375, 1.7923613)
 texture = ExtResource("2_0xm2m")
