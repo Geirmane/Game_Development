@@ -1,0 +1,45 @@
+[gd_scene load_steps=4 format=3 uid="uid://h36olv6uar35"]
+
+[ext_resource type="Texture2D" uid="uid://dur88fs4myruu" path="res://Naruto-Kid-Young-Naruto-Uzumaki-PNG-Transparent-Iconic-Anime-Character-Ninja-in-Training.png" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://blue4yq5rk7u8" path="res://fb8wf33k7kc61.webp" id="2_0xm2m"]
+
+[sub_resource type="GDScript" id="GDScript_0xm2m"]
+script/source = "extends Node2D
+
+@export var speed: float = 200.0
+var direction: int = 1
+
+func _process(delta):
+	$MovingSprite.position.x += speed * direction * delta
+	
+	# Reverse direction when reaching screen edges
+	if $MovingSprite.position.x > 700:
+		direction = -1
+	elif $MovingSprite.position.x < 100:
+		direction = 1
+"
+
+[node name="Main" type="Node2D"]
+script = SubResource("GDScript_0xm2m")
+
+[node name="HelloLabel" type="Label" parent="."]
+modulate = Color(0, 0, 0, 1)
+offset_left = 442.0
+offset_top = 37.0
+offset_right = 533.0
+offset_bottom = 60.0
+scale = Vector2(3, 3)
+text = "Hello World!
+I'm Naruto "
+
+[node name="MovingSprite" type="Sprite2D" parent="."]
+z_index = 1
+position = Vector2(295.99994, 433)
+scale = Vector2(0.28967735, 0.3132)
+texture = ExtResource("1_ig7tw")
+
+[node name="Fb8Wf33k7Kc61" type="Sprite2D" parent="."]
+z_index = -10
+position = Vector2(576.00006, 323.37497)
+scale = Vector2(1.7984375, 1.7923613)
+texture = ExtResource("2_0xm2m")
