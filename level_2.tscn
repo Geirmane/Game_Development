@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://cqk84dpuiywhf" path="res://Pictures/bg7.jpg" id="2_nmjpi"]
 [ext_resource type="Texture2D" uid="uid://drqkjlhw5yt3r" path="res://Pictures/pain.png" id="3_1y8me"]
 [ext_resource type="Texture2D" uid="uid://c6v4sacyaf67s" path="res://Naruto-Uzumaki.png" id="3_xdadj"]
+[ext_resource type="PackedScene" uid="uid://b7pt1dorkqxra" path="res://bg_music.tscn" id="4_1y8me"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1y8me"]
 size = Vector2(1148, 61)
@@ -211,3 +212,5 @@ flip_h = true
 [node name="AttackArea" type="CollisionShape2D" parent="Enem2_Pain/AttackArea" unique_id=1461602770]
 position = Vector2(-383.18475, 114.94252)
 shape = SubResource("CircleShape2D_1y8me")
+
+[node name="AudioStreamPlayer" parent="." unique_id=938271638 instance=ExtResource("4_1y8me")]
