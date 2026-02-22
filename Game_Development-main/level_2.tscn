@@ -1,0 +1,213 @@
+[gd_scene format=3 uid="uid://bf20riyx7rhyk"]
+
+[ext_resource type="Texture2D" uid="uid://cqk84dpuiywhf" path="res://Pictures/bg7.jpg" id="2_nmjpi"]
+[ext_resource type="Texture2D" uid="uid://drqkjlhw5yt3r" path="res://Pictures/pain.png" id="3_1y8me"]
+[ext_resource type="Texture2D" uid="uid://c6v4sacyaf67s" path="res://Naruto-Uzumaki.png" id="3_xdadj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1y8me"]
+size = Vector2(1148, 61)
+
+[sub_resource type="GDScript" id="GDScript_nmjpi"]
+script/source = "extends CharacterBody2D
+
+@export var speed: float = 250.0
+@export var jump_velocity: float = -450.0
+@export var gravity: float = 1000.0
+
+@export var dodge_speed: float = 700.0
+@export var dodge_time: float = 0.25
+
+# --- DOUBLE JUMP VARIABLES ---
+@export var max_jumps: int = 2
+var jump_count: int = 0
+
+var is_dodging: bool = false
+var dodge_timer: float = 0.0
+var facing_direction: int = 1   # 1 = right, -1 = left
+
+# --- ATTACK VARIABLES ---
+var is_attacking: bool = false
+@export var attack_duration: float = 0.3
+var original_texture: Texture2D
+
+@export var normal_scale: Vector2 = Vector2(1.9, 1.9) 
+@export var attack_scale: Vector2 = Vector2(3.5, 3.5) 
+
+@onready var attack_texture = preload(\"res://nartak.png\") 
+@onready var collision = $CollisionShape2D
+
+func _ready():
+	# Capture the starting texture and set initial scale
+	if $Sprite2D:
+		original_texture = $Sprite2D.texture
+		$Sprite2D.scale = normal_scale 
+	add_to_group(\"Player\")
+
+func _physics_process(delta):
+	# Apply gravity
+	if not is_on_floor():
+		velocity.y += gravity * delta
+	else:
+		# Reset jump count when landing
+		jump_count = 0
+
+	# Get movement input
+	var direction = Input.get_axis(\"move_left\", \"move_right\")
+
+	if direction != 0:
+		facing_direction = sign(direction)
+
+	# --- INPUTS ---
+	
+	# Attack Input (V Key)
+	if Input.is_action_just_pressed(\"attack\") and not is_attacking and not is_dodging:
+		start_attack()
+
+	# Dodge Input (Shift)
+	if Input.is_action_just_pressed(\"dodge\") and not is_dodging:
+		start_dodge()
+
+	# Jump Input (Space - supports Double Jump)
+	if Input.is_action_just_pressed(\"jump\") and jump_count < max_jumps:
+		velocity.y = jump_velocity
+		jump_count += 1
+
+	# --- STATE HANDLING ---
+	if is_dodging:
+		dodge_timer -= delta
+		velocity.x = facing_direction * dodge_speed
+		if dodge_timer <= 0:
+			end_dodge()
+	elif is_attacking:
+		# Slow down movement during the attack pose
+		velocity.x = direction * (speed * 0.5) 
+	else:
+		velocity.x = direction * speed
+
+	# --- VISUALS ---
+	if $Sprite2D:
+		$Sprite2D.flip_h = facing_direction < 0
+	
+	# Visual feedback for dodging (transparency)
+	modulate.a = 0.5 if is_dodging else 1.0
+
+	# Move character and handle collisions
+	move_and_slide()
+
+# =============================
+# ATTACK LOGIC (Damage Detection)
+# =============================
+func start_attack():
+	if is_attacking: return 
+	
+	print(\"Attack Started!\") 
+	is_attacking = true
+	
+	# Switch to attack texture and scale up
+	if $Sprite2D and attack_texture:
+		$Sprite2D.texture = attack_texture
+		$Sprite2D.scale = attack_scale 
+	
+	# --- IMPROVED ATTACK DETECTION ---
+	# Checks for any body inside the AttackArea node
+	if has_node(\"AttackArea\"):
+		var hit_list = $AttackArea.get_overlapping_bodies()
+		for body in hit_list:
+			# Ensure the target is in the 'Enemies' group and has a health system
+			if body.is_in_group(\"Enemies\") and body.has_method(\"take_damage\"):
+				body.take_damage(1)
+				print(\"Hit registered on Itachi!\")
+	
+	# Wait for the pose duration
+	await get_tree().create_timer(attack_duration).timeout
+	
+	end_attack()
+
+func end_attack():
+	is_attacking = false
+	if $Sprite2D:
+		$Sprite2D.texture = original_texture
+		$Sprite2D.scale = normal_scale 
+	print(\"Attack Ended!\")
+
+# =============================
+# DODGE & BOOST LOGIC
+# =============================
+func start_dodge():
+	is_dodging = true
+	dodge_timer = dodge_time
+	# Disable collision with Layer 2 (Crows) to pass through them
+	set_collision_mask_value(2, false)
+
+func end_dodge():
+	is_dodging = false
+	# Re-enable collision with Layer 2
+	set_collision_mask_value(2, true)
+
+func apply_jump_boost(boost_force: float):
+	velocity.y = boost_force
+"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_xdadj"]
+radius = 162.24945
+height = 696.0408
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1y8me"]
+radius = 45.29798
+
+[node name="Level2" type="Node2D" unique_id=461347800]
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=779112047]
+position = Vector2(9, 665)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=602381447]
+position = Vector2(569, -31.5)
+shape = SubResource("RectangleShape2D_1y8me")
+
+[node name="Bg7" type="Sprite2D" parent="." unique_id=1903879300]
+z_index = -10
+position = Vector2(574, 368.25)
+scale = Vector2(1.125, 1.257265)
+texture = ExtResource("2_nmjpi")
+
+[node name="Player_Naruto" type="CharacterBody2D" parent="." unique_id=1639429485]
+z_index = 1
+position = Vector2(295.99994, 433)
+scale = Vector2(0.28967735, 0.3132)
+script = SubResource("GDScript_nmjpi")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player_Naruto" unique_id=1572090617]
+position = Vector2(-566.1469, 185.18518)
+shape = SubResource("CapsuleShape2D_xdadj")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player_Naruto" unique_id=1737015861]
+position = Vector2(-600.6682, 153.25671)
+scale = Vector2(1.6233166, 1.7247082)
+texture = ExtResource("3_xdadj")
+
+[node name="AttackArea" type="Area2D" parent="Player_Naruto" unique_id=1265134198]
+
+[node name="AttackArea" type="CollisionShape2D" parent="Player_Naruto/AttackArea" unique_id=2097782507]
+position = Vector2(-383.18475, 114.94252)
+shape = SubResource("CircleShape2D_1y8me")
+
+[node name="Enem2_Pain" type="CharacterBody2D" parent="." unique_id=455306246]
+z_index = 1
+position = Vector2(295.99994, 433)
+scale = Vector2(0.28967735, 0.3132)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enem2_Pain" unique_id=1894081757]
+position = Vector2(2381.9607, 181.99232)
+shape = SubResource("CapsuleShape2D_xdadj")
+
+[node name="Sprite2D" type="Sprite2D" parent="Enem2_Pain" unique_id=1035831551]
+position = Vector2(2375.057, 92.5926)
+scale = Vector2(1.6233166, 1.7247082)
+texture = ExtResource("3_1y8me")
+flip_h = true
+
+[node name="AttackArea" type="Area2D" parent="Enem2_Pain" unique_id=1639952594]
+
+[node name="AttackArea" type="CollisionShape2D" parent="Enem2_Pain/AttackArea" unique_id=1461602770]
+position = Vector2(-383.18475, 114.94252)
+shape = SubResource("CircleShape2D_1y8me")

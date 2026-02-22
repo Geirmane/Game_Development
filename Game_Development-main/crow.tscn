@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://d16olyg506g2j"]
+
+[ext_resource type="Script" uid="uid://0xo81yjnl3eq" path="res://crow.gd" id="1_k41no"]
+[ext_resource type="Texture2D" uid="uid://e7x6fs6vems6" path="res://enematak.png" id="2_s2e11"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lquwl"]
+size = Vector2(265.81305, 210.72809)
+
+[node name="Crow" type="Area2D"]
+script = ExtResource("1_k41no")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(2174.5496, 226.9604)
+scale = Vector2(0.5437593, 0.67959774)
+texture = ExtResource("2_s2e11")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(2190.3682, 271.3921)
+scale = Vector2(0.9999999, 1)
+shape = SubResource("RectangleShape2D_lquwl")
+one_way_collision_margin = 55.0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

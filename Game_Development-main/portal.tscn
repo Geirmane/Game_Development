@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dsmv7c05u5o3o"]
+
+[ext_resource type="Texture2D" uid="uid://dbxlburf0ilfx" path="res://portal2.png" id="1_0r486"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5vw27"]
+radius = 65.21503
+
+[node name="Portal" type="Area2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_0r486")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_5vw27")
