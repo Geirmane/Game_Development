@@ -1,57 +1,307 @@
-[gd_scene load_steps=5 format=3 uid="uid://h36olv6uar35"]
+[gd_scene format=3 uid="uid://h36olv6uar35"]
 
-[ext_resource type="Texture2D" uid="uid://dur88fs4myruu" path="res://Naruto-Kid-Young-Naruto-Uzumaki-PNG-Transparent-Iconic-Anime-Character-Ninja-in-Training.png" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://blue4yq5rk7u8" path="res://fb8wf33k7kc61.webp" id="2_0xm2m"]
+[ext_resource type="Texture2D" uid="uid://c6v4sacyaf67s" path="res://Naruto-Uzumaki.png" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://b47xw4nkhirf8" path="res://main.gd" id="1_kek77"]
+[ext_resource type="Texture2D" uid="uid://dawt2uatst8v1" path="res://bg2.png" id="2_h2yge"]
+[ext_resource type="Texture2D" uid="uid://d1pnoaok1n2yg" path="res://narenem1.png" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://cx6ytyr5x20p5" path="res://enem_1_itachi.gd" id="3_lquwl"]
+[ext_resource type="PackedScene" uid="uid://d16olyg506g2j" path="res://crow.tscn" id="5_lquwl"]
+[ext_resource type="Texture2D" uid="uid://co2eaokaxsq7o" path="res://floorgang.png" id="6_7mycd"]
+[ext_resource type="PackedScene" uid="uid://dsmv7c05u5o3o" path="res://portal.tscn" id="8_5vw27"]
+[ext_resource type="Script" uid="uid://bhv8bn7csia6o" path="res://portal.gd" id="9_kek77"]
+[ext_resource type="Texture2D" uid="uid://cc30rcxw4bue6" path="res://Pictures/bg8.jpg" id="10_4c57u"]
 
 [sub_resource type="GDScript" id="GDScript_h2yge"]
 script/source = "extends CharacterBody2D
 
-@export var speed := 300.0
+@export var speed: float = 250.0
+@export var jump_velocity: float = -450.0
+@export var gravity: float = 1000.0
+
+@export var dodge_speed: float = 700.0
+@export var dodge_time: float = 0.25
+
+# --- DOUBLE JUMP VARIABLES ---
+@export var max_jumps: int = 2
+var jump_count: int = 0
+
+var is_dodging: bool = false
+var dodge_timer: float = 0.0
+var facing_direction: int = 1   # 1 = right, -1 = left
+
+# --- ATTACK VARIABLES ---
+var is_attacking: bool = false
+@export var attack_duration: float = 0.3
+var original_texture: Texture2D
+
+@export var normal_scale: Vector2 = Vector2(1.5, 1.5) 
+@export var attack_scale: Vector2 = Vector2(3.0, 3.0) 
+
+@onready var attack_texture = preload(\"res://nartak.png\") 
+@onready var collision = $CollisionShape2D
+
+func _ready():
+	# Capture the starting texture and set initial scale
+	if $Sprite2D:
+		original_texture = $Sprite2D.texture
+		$Sprite2D.scale = normal_scale 
+	add_to_group(\"Player\")
 
 func _physics_process(delta):
-	var direction := Vector2.ZERO
+	# Apply gravity
+	if not is_on_floor():
+		velocity.y += gravity * delta
+	else:
+		# Reset jump count when landing
+		jump_count = 0
 
-	if Input.is_action_pressed(\"ui_right\"):
-		direction.x += 1
-	if Input.is_action_pressed(\"ui_left\"):
-		direction.x -= 1
-	if Input.is_action_pressed(\"ui_down\"):
-		direction.y += 1
-	if Input.is_action_pressed(\"ui_up\"):
-		direction.y -= 1
+	# Get movement input
+	var direction = Input.get_axis(\"move_left\", \"move_right\")
 
-	velocity = direction.normalized() * speed
+	if direction != 0:
+		facing_direction = sign(direction)
+
+	# --- INPUTS ---
+	
+	# Attack Input (V Key)
+	if Input.is_action_just_pressed(\"attack\") and not is_attacking and not is_dodging:
+		start_attack()
+
+	# Dodge Input (Shift)
+	if Input.is_action_just_pressed(\"dodge\") and not is_dodging:
+		start_dodge()
+
+	# Jump Input (Space - supports Double Jump)
+	if Input.is_action_just_pressed(\"jump\") and jump_count < max_jumps:
+		velocity.y = jump_velocity
+		jump_count += 1
+
+	# --- STATE HANDLING ---
+	if is_dodging:
+		dodge_timer -= delta
+		velocity.x = facing_direction * dodge_speed
+		if dodge_timer <= 0:
+			end_dodge()
+	elif is_attacking:
+		# Slow down movement during the attack pose
+		velocity.x = direction * (speed * 0.5) 
+	else:
+		velocity.x = direction * speed
+
+	# --- VISUALS ---
+	if $Sprite2D:
+		$Sprite2D.flip_h = facing_direction < 0
+	
+	# Visual feedback for dodging (transparency)
+	modulate.a = 0.5 if is_dodging else 1.0
+
+	# Move character and handle collisions
 	move_and_slide()
+
+# =============================
+# ATTACK LOGIC (Damage Detection)
+# =============================
+func start_attack():
+	if is_attacking: return 
+	
+	print(\"Attack Started!\") 
+	is_attacking = true
+	
+	# Switch to attack texture and scale up
+	if $Sprite2D and attack_texture:
+		$Sprite2D.texture = attack_texture
+		$Sprite2D.scale = attack_scale 
+	
+	# --- IMPROVED ATTACK DETECTION ---
+	# Checks for any body inside the AttackArea node
+	if has_node(\"AttackArea\"):
+		var hit_list = $AttackArea.get_overlapping_bodies()
+		for body in hit_list:
+			# Ensure the target is in the 'Enemies' group and has a health system
+			if body.is_in_group(\"Enemies\") and body.has_method(\"take_damage\"):
+				body.take_damage(1)
+				print(\"Hit registered on Itachi!\")
+	
+	# Wait for the pose duration
+	await get_tree().create_timer(attack_duration).timeout
+	
+	end_attack()
+
+func end_attack():
+	is_attacking = false
+	if $Sprite2D:
+		$Sprite2D.texture = original_texture
+		$Sprite2D.scale = normal_scale 
+	print(\"Attack Ended!\")
+
+# =============================
+# DODGE & BOOST LOGIC
+# =============================
+func start_dodge():
+	is_dodging = true
+	dodge_timer = dodge_time
+	# Disable collision with Layer 2 (Crows) to pass through them
+	set_collision_mask_value(2, false)
+
+func end_dodge():
+	is_dodging = false
+	# Re-enable collision with Layer 2
+	set_collision_mask_value(2, true)
+
+func apply_jump_boost(boost_force: float):
+	velocity.y = boost_force
 "
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7mycd"]
+radius = 203.6749
+height = 581.0984
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kek77"]
+radius = 45.29798
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0xm2m"]
+size = Vector2(3013.5, 8.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h2yge"]
+size = Vector2(17.5, 742)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lquwl"]
+size = Vector2(2897.75, 48.75)
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ig7tw"]
+radius = 176.05835
+height = 702.4265
 
-[node name="Main" type="Node2D"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_lquwl"]
+radius = 90.96077
 
-[node name="HelloLabel" type="Label" parent="."]
-modulate = Color(0, 0, 0, 1)
-offset_left = 442.0
-offset_top = 37.0
-offset_right = 533.0
-offset_bottom = 60.0
-scale = Vector2(3, 3)
-text = "Hello World!
-I'm Naruto "
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7mycd"]
+size = Vector2(173, 17)
 
-[node name="MovingSprite" type="CharacterBody2D" parent="."]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_272bh"]
+size = Vector2(184, 17.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5vw27"]
+size = Vector2(184.75, 11.5)
+
+[node name="Main" type="Node2D" unique_id=788083361 groups=["Enemies"]]
+script = ExtResource("1_kek77")
+
+[node name="Player_Naruto" type="CharacterBody2D" parent="." unique_id=310991854]
 z_index = 1
 position = Vector2(295.99994, 433)
 scale = Vector2(0.28967735, 0.3132)
 script = SubResource("GDScript_h2yge")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="MovingSprite"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player_Naruto" unique_id=592783824]
+position = Vector2(-566.1469, 185.18518)
+shape = SubResource("CapsuleShape2D_7mycd")
+
+[node name="Sprite2D" type="Sprite2D" parent="Player_Naruto" unique_id=1193988106]
+position = Vector2(-579.9554, 127.71393)
+scale = Vector2(1.6233166, 1.7247082)
+texture = ExtResource("1_0xm2m")
+
+[node name="AttackArea" type="Area2D" parent="Player_Naruto" unique_id=1546318642]
+
+[node name="AttackArea" type="CollisionShape2D" parent="Player_Naruto/AttackArea" unique_id=1279150430]
+position = Vector2(-383.18475, 114.94252)
+shape = SubResource("CircleShape2D_kek77")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1202507498]
+visible = false
+z_index = -10
+position = Vector2(548.00006, 321.5)
+scale = Vector2(0.6267569, 0.6027778)
+texture = ExtResource("2_h2yge")
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=691412864]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=1135760011]
+position = Vector2(1377.25, 680.75)
+shape = SubResource("RectangleShape2D_0xm2m")
+one_way_collision = true
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Ground" unique_id=1120971015]
+position = Vector2(-9, 349)
+shape = SubResource("RectangleShape2D_h2yge")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Ground" unique_id=1122261412]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground/StaticBody2D" unique_id=1723881354]
+position = Vector2(1361, 646)
+shape = SubResource("RectangleShape2D_lquwl")
+
+[node name="ENEM1_ITACHI" type="CharacterBody2D" parent="." unique_id=137286429 groups=["Enemies"]]
+z_index = 1
+position = Vector2(390, 425)
+scale = Vector2(0.28967735, 0.3132)
+script = ExtResource("3_lquwl")
+crow_scene = ExtResource("5_lquwl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ENEM1_ITACHI" unique_id=2036165275]
+position = Vector2(2361.2478, 188.37804)
 shape = SubResource("CapsuleShape2D_ig7tw")
 
-[node name="Sprite2D" type="Sprite2D" parent="MovingSprite"]
-texture = ExtResource("1_ig7tw")
+[node name="Sprite2D" type="Sprite2D" parent="ENEM1_ITACHI" unique_id=319554556]
+position = Vector2(2385.4124, 172.41376)
+scale = Vector2(0.817354, 0.5868788)
+texture = ExtResource("3_h2yge")
+flip_h = true
 
-[node name="Fb8Wf33k7Kc61" type="Sprite2D" parent="."]
-z_index = -10
-position = Vector2(576.00006, 328)
-scale = Vector2(1.7984375, 1.7923613)
-texture = ExtResource("2_0xm2m")
+[node name="ProgressBar" type="ProgressBar" parent="ENEM1_ITACHI" unique_id=1790878712]
+offset_left = 2136.8604
+offset_top = -271.39212
+offset_right = 2558.0188
+offset_bottom = -210.72794
+max_value = 10.0
+value = 10.0
+
+[node name="Crow" parent="." unique_id=579903598 instance=ExtResource("5_lquwl")]
+position = Vector2(299.00003, 464)
+scale = Vector2(0.28967735, 0.3132)
+collision_layer = 2
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Crow" unique_id=1541285489]
+position = Vector2(2181.738, 265.00638)
+shape = SubResource("CircleShape2D_lquwl")
+
+[node name="JumpTile" type="StaticBody2D" parent="." unique_id=839577158]
+position = Vector2(317, 535)
+
+[node name="Floorgang2" type="Sprite2D" parent="JumpTile" unique_id=805293687]
+position = Vector2(211.99997, -99)
+scale = Vector2(0.26053572, 0.04714284)
+texture = ExtResource("6_7mycd")
+
+[node name="Floorgang" type="Sprite2D" parent="JumpTile" unique_id=1487414374]
+position = Vector2(2, -2.9999962)
+scale = Vector2(0.2582143, 0.08285711)
+texture = ExtResource("6_7mycd")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="JumpTile" unique_id=807551505]
+position = Vector2(0, 6)
+shape = SubResource("RectangleShape2D_7mycd")
+
+[node name="Floorgang4" type="Sprite2D" parent="JumpTile" unique_id=49929921]
+position = Vector2(429, -172.00002)
+scale = Vector2(0.2645536, 0.04428572)
+texture = ExtResource("6_7mycd")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="JumpTile" unique_id=770213422]
+position = Vector2(212, -91)
+shape = SubResource("RectangleShape2D_272bh")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="JumpTile" unique_id=926439703]
+position = Vector2(429, -165)
+shape = SubResource("RectangleShape2D_5vw27")
+
+[node name="Portal" parent="." unique_id=385455917 instance=ExtResource("8_5vw27")]
+position = Vector2(1037, 144)
+script = ExtResource("9_kek77")
+
+[node name="Bg8" type="Sprite2D" parent="." unique_id=1622255427]
+z_index = -1
+position = Vector2(572, 366.5)
+scale = Vector2(1.1445313, 0.9678715)
+texture = ExtResource("10_4c57u")
