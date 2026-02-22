@@ -5,7 +5,7 @@ Week 1 Activity 1
 ![Screenshot](Week2.2.png)
 ![Screenshot](Week2.3.png)
 Added Next Level Portal
-![Screenshot](Week2.4.png)
+![Screenshot](week2.4.png)
 
 Week 2
 
