@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="SimpleMovingNode"
-run/main_scene="uid://h36olv6uar35"
+run/main_scene="uid://ds3gtbc46lryy"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

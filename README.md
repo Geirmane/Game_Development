@@ -10,6 +10,16 @@ Added Next Level Portal
 Week 2
 
 
+
+
+![Screenshot](newmen.png)
+Added Menu
+
+![Screenshot](newss.png)
+Improved Level 2
+Week 3
+
+
 🎮 Project Description
 This project is a 2D Godot scene developed as part of a Game Development course. It has evolved from a simple "Hello World" project into a functional platformer prototype featuring combat, boss mechanics, and scene transitions.
 

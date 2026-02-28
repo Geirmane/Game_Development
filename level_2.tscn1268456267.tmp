@@ -9,14 +9,6 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1y8me"]
 size = Vector2(1148, 61)
 
-[sub_resource type="SegmentShape2D" id="SegmentShape2D_n7ypv"]
-a = Vector2(-11, -665)
-b = Vector2(-10, 76)
-
-[sub_resource type="SegmentShape2D" id="SegmentShape2D_0s5r2"]
-a = Vector2(1137, -7)
-b = Vector2(1142, -663)
-
 [sub_resource type="GDScript" id="GDScript_nmjpi"]
 script/source = "extends CharacterBody2D
 
@@ -51,24 +43,19 @@ var original_texture: Texture2D
 # Asset Preloading
 @onready var attack_texture = preload(\"res://nartak.png\") 
 @onready var transformed_texture = preload(\"res://Pictures/narup2.png\")
-# This finds the ProgressBar inside your HUD CanvasLayer
 @onready var health_bar = get_tree().root.find_child(\"PlayerHealthBar\", true, false)
 @onready var sprite = $Sprite2D
 @onready var collision = $CollisionShape2D
 
+# Correct this line in Player_Naruto.gd
+@onready var health_bar = get_tree().root.find_child(\"PlayerHealthBar\", true, false)
+
 func _ready():
-	# 1. Initialize Health and HUD
 	current_health = max_health
+	# Check if the node is actually a ProgressBar before setting values
 	if health_bar and health_bar is ProgressBar:
 		health_bar.max_value = max_health
 		health_bar.value = current_health
-	
-	# 2. Capture Starting State
-	if sprite:
-		original_texture = sprite.texture
-		sprite.scale = normal_scale
-	
-	add_to_group(\"Player\")
 
 func _physics_process(delta):
 	# Apply gravity
@@ -142,7 +129,7 @@ func transform_to_p2():
 	has_transformed = true
 	if sprite and transformed_texture:
 		sprite.texture = transformed_texture
-		# Update the \"original\" texture so it doesn't switch back to normal pose after attacking
+		# Optional: Update the \"original\" texture so it doesn't switch back after attacking
 		original_texture = transformed_texture
 		print(\"Naruto transformed to P2 pose!\")
 
@@ -167,7 +154,6 @@ func start_attack():
 	if has_node(\"AttackArea\"):
 		var hit_list = $AttackArea.get_overlapping_bodies()
 		for body in hit_list:
-			# Hit enemies like Itachi or Pain
 			if body.is_in_group(\"Enemies\") and body.has_method(\"take_damage\"):
 				body.take_damage(1)
 	
@@ -212,23 +198,27 @@ position = Vector2(9, 665)
 position = Vector2(569, -31.5)
 shape = SubResource("RectangleShape2D_1y8me")
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Ground" unique_id=1622130094]
-shape = SubResource("SegmentShape2D_n7ypv")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="Ground" unique_id=743076101]
-shape = SubResource("SegmentShape2D_0s5r2")
-
 [node name="Bg7" type="Sprite2D" parent="." unique_id=1903879300]
 z_index = -10
 position = Vector2(574, 368.25)
 scale = Vector2(1.125, 1.257265)
 texture = ExtResource("2_nmjpi")
 
-[node name="Player_Naruto" type="CharacterBody2D" parent="." unique_id=1639429485 groups=["Player"]]
+[node name="Player_Naruto" type="CharacterBody2D" parent="." unique_id=1639429485]
 z_index = 1
 position = Vector2(295.99994, 433)
 scale = Vector2(0.28967735, 0.3132)
 script = SubResource("GDScript_nmjpi")
+speed = null
+jump_velocity = null
+gravity = null
+dodge_speed = null
+dodge_time = null
+max_health = null
+max_jumps = null
+attack_duration = null
+normal_scale = null
+attack_scale = null
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player_Naruto" unique_id=1572090617]
 position = Vector2(-566.1469, 185.18518)
@@ -271,7 +261,7 @@ flip_h = true
 [node name="AttackArea" type="Area2D" parent="Enem2_Pain" unique_id=1639952594]
 
 [node name="AttackArea" type="CollisionShape2D" parent="Enem2_Pain/AttackArea" unique_id=1461602770]
-position = Vector2(2192.094, 47.892715)
+position = Vector2(-383.18475, 114.94252)
 shape = SubResource("CircleShape2D_1y8me")
 
 [node name="ProgressBar" type="ProgressBar" parent="Enem2_Pain" unique_id=1424292093]
@@ -284,5 +274,3 @@ rounded = true
 [node name="AudioStreamPlayer" parent="." unique_id=938271638 instance=ExtResource("4_1y8me")]
 volume_db = -9.541
 pitch_scale = 0.71
-
-[connection signal="body_entered" from="Enem2_Pain/AttackArea" to="Enem2_Pain" method="_on_attack_area_body_entered"]
