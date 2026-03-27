@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 BgMusic="*uid://b7pt1dorkqxra"
+MultiplayerManager="*uid://duj735xyoko84"
 
 [input]
 

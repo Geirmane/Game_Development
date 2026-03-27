@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ds3gtbc46lryy"]
 
-[ext_resource type="Texture2D" uid="uid://ugaqu5jw3m4h" path="res://Pictures/menubg.jpg" id="1_lti8b"]
 [ext_resource type="Script" uid="uid://b2wso7oke7xer" path="res://menu.gd" id="1_ouk20"]
+[ext_resource type="Texture2D" uid="uid://ccdat4aabjoot" path="res://menubg.png" id="2_ouk20"]
 
 [node name="Menu" type="Control" unique_id=1217216735]
 layout_mode = 3
@@ -10,23 +10,23 @@ mouse_filter = 2
 script = ExtResource("1_ouk20")
 
 [node name="Menubg" type="Sprite2D" parent="." unique_id=1126440978]
-position = Vector2(572.5, 368.5)
-scale = Vector2(1.1240234, 1.284965)
-texture = ExtResource("1_lti8b")
+position = Vector2(578.24194, 364.9117)
+scale = Vector2(0.41655132, 0.47537538)
+texture = ExtResource("2_ouk20")
 
 [node name="Button" type="Button" parent="." unique_id=2052712895]
 layout_mode = 0
-offset_left = 416.0
-offset_top = 442.0
-offset_right = 721.0
-offset_bottom = 507.0
+offset_left = 424.0
+offset_top = 441.0
+offset_right = 729.0
+offset_bottom = 506.0
 
 [node name="Button2" type="Button" parent="." unique_id=1752105055]
 layout_mode = 0
-offset_left = 407.0
-offset_top = 536.0
-offset_right = 736.0
-offset_bottom = 613.0
+offset_left = 413.0
+offset_top = 535.0
+offset_right = 742.0
+offset_bottom = 612.0
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="Button2" to="." method="_on_button_2_pressed"]
